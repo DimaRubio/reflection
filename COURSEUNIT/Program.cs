@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace COURSEUNIT
+namespace Course
 {
     class Program
     {
@@ -12,4 +12,13 @@ namespace COURSEUNIT
         {
         }
     }
+    public class A
+    {
+        private double Div(int a, int b)
+        {
+            //return a / b; 
+            return (double)a / (b + a);
+        }
+    }
+
 }
