@@ -26,6 +26,11 @@ namespace Course
             set { publicValue = value; }
         }
 
+        public string GetPrivateField
+        {
+            get { return privateValue; }
+        }
+
         string PrivateProperty
         {
             get { return privateValue; }

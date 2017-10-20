@@ -3,9 +3,26 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Course;
 using System.Reflection;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace UnitTestProject1
 {
+    public static class Extension
+    {
+        //Расширяющий кастомный метод принимающий в качестве параметра объект IEnumerable параметризированный MemberInfo.
+        //MemberInfo является базовым классом для FieldInfo MethodInfo и др.
+        public static void PrintValues(this IEnumerable<MemberInfo> members)
+        {
+            Console.WriteLine(members.GetType().GetElementType().Name);
+            foreach (MemberInfo item in members)
+            {
+                Console.WriteLine(item);
+            }
+            Console.WriteLine(new String('-', 20));
+        }
+
+    }
+
     [TestClass]
     public class UnitTest1
     {
@@ -16,14 +33,24 @@ namespace UnitTestProject1
         {
             //var a = new A();
             Type[] arr_type = new Type[3];
-            arr_type[0] = typeof(A);
-            arr_type[1] = a.GetType();
+            //№1
+            arr_type[0] = typeof(A); //или  Type aType = typeof(A;
+            //№2
+            arr_type[1] = a.GetType(); //или Type aType = a.GetType();
+            //№3
             arr_type[2] = Type.GetType("UnitTestProject1.UnitTest1");
             foreach (Type item in arr_type)
             {
                 Console.WriteLine("Type: {0}, Namespace: {1}", item.Name, item.Namespace);
-            } 
+            }
 
+            //класса обертки TypeInfo доступно с версии 4.5
+            TypeInfo aTypeInfo = a.GetType().GetTypeInfo();
+            IEnumerable<FieldInfo> allFields = aTypeInfo.DeclaredFields;
+            allFields.PrintValues();
+
+            IEnumerable<MethodInfo> allMethods = aTypeInfo.DeclaredMethods;
+            allMethods.PrintValues();
         }
 
         [TestMethod]
@@ -64,12 +91,28 @@ namespace UnitTestProject1
             }
 
             Console.WriteLine(new string('-', 20));
-
+            //private methods
             arrMethod = aType.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
             foreach (MethodInfo item in arrMethod)
             {
                 Console.WriteLine("Method name: {0}, ", item.Name);
             }
+        }
+
+        [TestMethod]
+        public void work_with_private_members()
+        {
+            Type aType = a.GetType();
+            MethodInfo[] arrMethod = aType.GetMethods( BindingFlags.NonPublic| BindingFlags.Instance);
+            FieldInfo[] arrField = aType.GetFields(BindingFlags.NonPublic | BindingFlags.Instance);
+            FieldInfo privateField = arrField.Where(t => t.Name == "privateValue").Single();
+            privateField.SetValue(a,"Changed value"); //меняем значение закрытого поля
+            //Console.WriteLine(privateField); // dont work
+            Console.WriteLine(a.GetPrivateField); //
+
+            // еще способ распечатать значение приватной переменно с помощью закрытого getter-a приватного свойства используя рфлексию
+            MethodInfo private_propperty_getter = arrMethod.Where(t => t.Name == "get_PrivateProperty").Single();
+            Console.WriteLine(private_propperty_getter.Invoke(a,new object[] { }));
         }
 
         [TestMethod]
